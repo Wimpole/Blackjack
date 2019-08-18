@@ -1,0 +1,5 @@
+﻿bin
+.vs
+obj
+BlackJack.Test
+Migrations
