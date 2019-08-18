@@ -22,6 +22,7 @@ namespace BlackJack
             Console.OutputEncoding = Encoding.UTF8;
 
             Console.BackgroundColor = ConsoleColor.DarkGreen;
+            Console.ForegroundColor = ConsoleColor.White;
             Console.Clear();
 
             _activeDeck = ShuffleDeck(_activeDeck);
