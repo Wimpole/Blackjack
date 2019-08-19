@@ -27,90 +27,255 @@ namespace BlackJack
 
             _activeDeck = ShuffleDeck(_activeDeck);
 
-            PlayerSelectionScreen();
+            while(true)
+            {
+                MenuChoice menuChoice = ShowMainMenu();
 
+                if (menuChoice == MenuChoice.PlayGame)
+                {
+                    PlayerSelectionScreen();
+
+                    Console.Clear();
+
+                    while (true)
+                    {
+                        LetPlayerPlaceBet();
+
+                        DealHand(_activeDeck, _currentPlayer, _dealer);
+
+                        PlayerPlayHand();
+                        
+                        if (_currentPlayer.HandValue <= 21)
+                            PlayDealerHand();
+
+                        HandResult handResult = CheckHandResult();
+
+                        DisplayHandResult(handResult);
+
+                        UpdatePlayerChipCount(handResult);
+
+                        _dataAccess.UpdatePlayer(_currentPlayer);
+
+                        ClearHand();
+
+                        if (_activeDeck.PlayingCards.Count < 10)
+                            ReshuffleDeck();
+
+                        if (!PlayAnotherHand())
+                            break;
+                    }
+                }
+                else if (menuChoice == MenuChoice.ShowHighscore)
+                    ShowHighscore();
+                else if (menuChoice == MenuChoice.ExitGame)
+                {
+                    ShowExitScreen();
+                    break;
+                }
+            }
+        }
+
+        private void PlayerPlayHand()
+        {
+            while (true)
+            {
+                DisplayPlayerHand();
+
+                PlayerAction playerAction = new PlayerAction();
+
+                if (_currentPlayer.HandValue != 21)
+                    playerAction = GetPlayerAction();
+                else
+                    playerAction = PlayerAction.Stand;
+
+
+                if (playerAction == PlayerAction.Stand)
+                    break;
+                else if (playerAction == PlayerAction.Hit)
+                {
+                    _currentPlayer.CurrentHand.Add(_activeDeck.GetCardFromDeck());
+                    //Hit(_activeDeck, _currentPlayer);
+
+                    if (_currentPlayer.HandValue > 21)
+                        break;
+
+                }
+            }
+        }
+
+        private MenuChoice ShowMainMenu()
+        {
             Console.Clear();
+
+            PrintBlackjackHeader();
+
+            Console.WriteLine();
+            Console.WriteLine();
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+
+            Console.WriteLine("-=#|   Main  menu   |#=-".PadLeft(72));
+            Console.WriteLine();
+
+            Console.WriteLine("1) Play the game".PadLeft(67));
+            Console.WriteLine("2) View highscores".PadLeft(69));
+            Console.WriteLine("3) Exit game".PadLeft(63));
+            Console.WriteLine();
+
+            Console.ForegroundColor = ConsoleColor.White;
+
+            Console.SetCursorPosition(51, 14);
 
             while(true)
             {
-                LetPlayerPlaceBet();
+                ConsoleKey menuChoice = Console.ReadKey(true).Key;
 
-                DealHand(_activeDeck, _currentPlayer, _dealer);
-
-                while (true)
+                switch(menuChoice)
                 {
-                    DisplayPlayerHand();
-
-                    PlayerAction playerAction = new PlayerAction();
-
-                    if (_currentPlayer.HandValue != 21)
-                        playerAction = GetPlayerAction();
-                    else
-                        playerAction = PlayerAction.Stand;
-
-
-                    if (playerAction == PlayerAction.Stand)
-                        break;
-                    else if (playerAction == PlayerAction.Hit)
-                    {
-                        Hit(_activeDeck, _currentPlayer);
-
-                        if (_currentPlayer.HandValue > 21)
-                            break;
-                    
-                    }
+                    case ConsoleKey.D1:
+                        return MenuChoice.PlayGame;
+                    case ConsoleKey.D2:
+                        return MenuChoice.ShowHighscore;
+                    case ConsoleKey.D3:
+                        return MenuChoice.ExitGame;
                 }
-
-                if(_currentPlayer.HandValue <= 21)
-                    PlayDealerHand();
-
-                HandResult handResult = CheckHandResult();
-
-                DisplayHandResult(handResult);
-
-                UpdatePlayerChipCount(handResult);
-
-                _dataAccess.UpdatePlayer(_currentPlayer);
-
-                ClearHand();
-
-                if (_activeDeck.PlayingCards.Count < 10)
-                    ReshuffleDeck();
-
-                if (!PlayAnotherHand())
-                    break;
             }
+        }
 
-            ShowExitScreen();
+        private void WriteRed(string s)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.Write(s);
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
+        private void WriteBlack(string s)
+        {
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.Write(s);
+            Console.ForegroundColor = ConsoleColor.White;
         }
 
         private void ShowExitScreen()
         {
             Console.Clear();
 
-            Console.WriteLine("Thanks for playing Blackjack. Here are the current chipleaders:");
-
-            List<Player> highscorePlayers = _dataAccess.GetTopTenPlayers();
-
-
-            Console.WriteLine();
-            Console.WriteLine("Position".PadRight(10) + "Name".PadRight(10) + "Chips".PadRight(10) + "Games played");
-            for (int i = 0; i < highscorePlayers.Count; i++)
-            {
-                Console.WriteLine($"{i+1}.".PadRight(10) + highscorePlayers[i].Name.PadRight(10) + highscorePlayers[i].TotalChips.ToString().PadRight(10) + highscorePlayers[i].GamesPlayed);
-            }
+            Console.WriteLine("Thanks for playing Blackjack.");
 
             Console.WriteLine();
             Console.WriteLine("Press any key to exit the game");
+
             Console.ReadKey(true);
         }
 
-        private bool PlayAnotherHand()
+        private void ShowHighscore()
         {
+            List<Player> highscorePlayers = _dataAccess.GetTopTenPlayers();
+
+            Console.Clear();
+
+            Console.Write("              ");
+            WriteBlack(@" __    __   ");
+            WriteRed(@"__    ");
+            WriteBlack(@"_______  ");
+            WriteRed(@"__    __       ");
+            WriteBlack(@"_______.  ");
+            WriteRed(@"______   ");
+            WriteBlack(@"______   ");
+            WriteRed(@".______       ");
+            WriteBlack(@"_______ ");
+            Console.WriteLine();
+
+            Console.Write("              ");
+            WriteBlack(@"|  |  |  | ");
+            WriteRed(@"|  |  ");
+            WriteBlack(@"/  _____|");
+            WriteRed(@"|  |  |  |     ");
+            WriteBlack(@"/       | ");
+            WriteRed(@"/      | ");
+            WriteBlack(@"/  __  \  ");
+            WriteRed(@"|   _  \     ");
+            WriteBlack(@"|   ____|");
+            Console.WriteLine();
+
+            Console.Write("              ");
+            WriteBlack(@"|  |__|  | ");
+            WriteRed(@"|  | ");
+            WriteBlack(@"|  |  __  ");
+            WriteRed(@"|  |__|  |    ");
+            WriteBlack(@"|   (----`");
+            WriteRed(@"|  ,----'");
+            WriteBlack(@"|  |  |  | ");
+            WriteRed(@"|  |_)  |    ");
+            WriteBlack(@"|  |__   ");
+            Console.WriteLine();
+
+
+            Console.Write("              ");
+            WriteBlack(@"|   __   | ");
+            WriteRed(@"|  | ");
+            WriteBlack(@"|  | |_ | ");
+            WriteRed(@"|   __   |     ");
+            WriteBlack(@"\   \    ");
+            WriteRed(@"|  |     ");
+            WriteBlack(@"|  |  |  | ");
+            WriteRed(@"|      /     ");
+            WriteBlack(@"|   __|  ");
+            Console.WriteLine();
+
+            Console.Write("              ");
+            WriteBlack(@"|  |  |  | ");
+            WriteRed(@"|  | ");
+            WriteBlack(@"|  |__| | ");
+            WriteRed(@"|  |  |  | ");
+            WriteBlack(@".----)   |   ");
+            WriteRed(@"|  `----.");
+            WriteBlack(@"|  `--'  | ");
+            WriteRed(@"|  |\  \----.");
+            WriteBlack(@"|  |____ ");
+            Console.WriteLine();
+
+            Console.Write("              ");
+            WriteBlack(@"|__|  |__| ");
+            WriteRed(@"|__|  ");
+            WriteBlack(@"\______| ");
+            WriteRed(@"|__|  |__| ");
+            WriteBlack(@"|_______/     ");
+            WriteRed(@"\______| ");
+            WriteBlack(@"\______/  ");
+            WriteRed(@"| _| `._____|");
+            WriteBlack(@"|_______|");
+            Console.WriteLine();
+
+            Console.WriteLine();
+            Console.WriteLine();
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+
+            Console.WriteLine("".PadLeft(39) + "Position".PadRight(10) + "Name".PadRight(10) + "Chips".PadRight(10) + "Games played");
+            for (int i = 0; i<highscorePlayers.Count; i++)
+            {
+                Console.WriteLine("".PadLeft(39) + $"{i+1}.".PadRight(10) + highscorePlayers[i].Name.PadRight(10) + highscorePlayers[i].TotalChips.ToString().PadRight(10) + highscorePlayers[i].GamesPlayed);
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("".PadLeft(39) + "Press any key to return to main menu");
+
+            Console.ForegroundColor = ConsoleColor.White;
+
+            Console.ReadKey();
+        }
+
+
+    private bool PlayAnotherHand()
+        {
+            Console.SetCursorPosition(39, 24);
+
             Console.WriteLine("Would you like to play another hand? (y/n)");
 
             while(true)
             {
+                Console.SetCursorPosition(59, 25);
                 ConsoleKey userChoice = Console.ReadKey(true).Key;
 
                 if (userChoice == ConsoleKey.Y)
@@ -149,8 +314,15 @@ namespace BlackJack
 
         private void PlayerSelectionScreen()
         {
-            Console.WriteLine("Welcome to the Blackjack table. What is your name?");
+            Console.Clear();
 
+            PrintBlackjackHeader();
+
+            Console.WriteLine();
+
+            Console.WriteLine("".PadLeft(35) + "Welcome to the Blackjack table. What is your name?");
+
+            Console.SetCursorPosition(55,9);
             string playerName = Console.ReadLine();
 
             _currentPlayer = _dataAccess.GetPlayerByName(playerName);
@@ -210,6 +382,8 @@ namespace BlackJack
 
         private void DisplayHandResult(HandResult handResult)
         {
+            Console.SetCursorPosition(40, 9);
+
             if(handResult == HandResult.PlayerBust)
                 Console.WriteLine($"You were busted! You lost your bet of {_currentPlayer.CurrentBet} chips.");
             else if(handResult == HandResult.DealerBust)
@@ -242,7 +416,8 @@ namespace BlackJack
 
                 if(handValue < 17 || handValue == 17 && hardValue < 17)
                 {
-                    Hit(_activeDeck, _dealer);
+                    _dealer.CurrentHand.Add(_activeDeck.GetCardFromDeck());
+                    //Hit(_activeDeck, _dealer);
                 }
                 else
                 {
@@ -285,7 +460,7 @@ namespace BlackJack
 
         public PlayerAction GetPlayerAction()
         {
-            Console.WriteLine("Would you like to (h)it, or (s)tand?");
+            Console.WriteLine("Would you like to (h)it, or (s)tand?".PadLeft(78));
             while (true)
             {
                 ConsoleKey action = Console.ReadKey(true).Key;
@@ -304,9 +479,44 @@ namespace BlackJack
         {
             Console.Clear();
 
-            Console.WriteLine($"Your hand is: {_currentPlayer.HandValue}");
+            Console.WriteLine();
+            Console.WriteLine("Dealer".PadLeft(63));
+            Console.WriteLine();
 
-            foreach (PlayingCard card in _currentPlayer.CurrentHand)
+            PrintPlayerHand(_dealer);
+
+            Console.WriteLine();
+            Console.WriteLine("Value: ".PadLeft(62) + _dealer.HandValue);
+
+            Console.WriteLine("\n\n\n\n\n\n");
+
+            Console.WriteLine("Player".PadLeft(63));
+            Console.WriteLine();
+
+            PrintPlayerHand(_currentPlayer);
+
+
+            Console.WriteLine();
+            Console.WriteLine("Value: ".PadLeft(62) + _currentPlayer.HandValue);
+
+
+            Console.WriteLine();
+            Console.WriteLine("Current bet: ".PadLeft(65) + _currentPlayer.CurrentBet);
+            Console.WriteLine();
+
+
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Cards left in deck: ".PadLeft(70) + _activeDeck.PlayingCards.Count);
+
+            Console.WriteLine();
+        }
+
+        private void PrintPlayerHand(Player player)
+        {
+            Console.Write("".PadLeft(55));
+
+            foreach (PlayingCard card in player.CurrentHand)
             {
                 Console.Write("[");
 
@@ -321,36 +531,6 @@ namespace BlackJack
 
                 Console.Write("] ");
             }
-
-            Console.WriteLine();
-            Console.WriteLine();
-
-            Console.WriteLine($"The dealers hand is: {_dealer.HandValue}");
-            foreach (PlayingCard dealerCard in _dealer.CurrentHand)
-            {
-                Console.Write("[");
-
-                if (dealerCard.CardSuit == CardSuit.Diamonds || dealerCard.CardSuit == CardSuit.Hearts)
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
-                else
-                    Console.ForegroundColor = ConsoleColor.Black;
-
-                Console.Write(dealerCard.ToString());
-
-                Console.ForegroundColor = ConsoleColor.White;
-
-                Console.Write("] ");
-            }
-
-            Console.WriteLine();
-            Console.WriteLine();
-
-            Console.WriteLine($"Cards remaining in deck: {_activeDeck.PlayingCards.Count}");
-            Console.WriteLine();
-
-            Console.WriteLine($"Current bet: {_currentPlayer.CurrentBet}");
-            Console.WriteLine($"Total chips: {_currentPlayer.TotalChips}");
-            Console.WriteLine();
         }
 
         public void DealHand(PlayingCardDeck activeDeck, Player player, Player dealer)
@@ -373,10 +553,89 @@ namespace BlackJack
             return deck;
         }
 
-        public void Hit(PlayingCardDeck deck, Player player)
+        //public void Hit(PlayingCardDeck deck, Player player)
+        //{
+        //    player.CurrentHand.Add(deck.PlayingCards[0]);
+        //    deck.PlayingCards.RemoveAt(0);
+        //    // Skapa en metod för att ta bort kortet istället. Skyddar listan mot angrepp
+        //}
+
+        public void PrintBlackjackHeader()
         {
-            player.CurrentHand.Add(deck.PlayingCards[0]);
-            deck.PlayingCards.RemoveAt(0);
+            Console.WriteLine();
+
+            Console.Write("\t       ");
+            WriteBlack(@".______    ");
+            WriteRed(@"__          ");
+            WriteBlack(@"___       ");
+            WriteRed(@"______  ");
+            WriteBlack(@"__  ___        ");
+            WriteRed(@"__       ");
+            WriteBlack(@"___       ");
+            WriteRed(@"______  ");
+            WriteBlack(@"__  ___");
+            Console.WriteLine();
+
+            Console.Write("\t       ");
+            WriteBlack(@"|   _  \  ");
+            WriteRed(@"|  |        ");
+            WriteBlack(@"/   \     ");
+            WriteRed(@"/      |");
+            WriteBlack(@"|  |/  /       ");
+            WriteRed(@"|  |     ");
+            WriteBlack(@"/   \     ");
+            WriteRed(@"/      |");
+            WriteBlack(@"|  |/  / ");
+            Console.WriteLine();
+
+            Console.Write("\t       ");
+            WriteBlack(@"|  |_)  | ");
+            WriteRed(@"|  |       ");
+            WriteBlack(@"/  ^  \   ");
+            WriteRed(@"|  ,----'");
+            WriteBlack(@"|  '  /        ");
+            WriteRed(@"|  |    ");
+            WriteBlack(@"/  ^  \   ");
+            WriteRed(@"|  ,----'");
+            WriteBlack(@"|  '  /");
+            Console.WriteLine();
+
+            Console.Write("\t       ");
+            WriteBlack(@"|   _  <  ");
+            WriteRed(@"|  |      ");
+            WriteBlack(@"/  /_\  \  ");
+            WriteRed(@"|  |     ");
+            WriteBlack(@"|    <   ");
+            WriteRed(@".--.  |  |   ");
+            WriteBlack(@"/  /_\  \  ");
+            WriteRed(@"|  |     ");
+            WriteBlack(@"|    <");
+            Console.WriteLine();
+
+            Console.Write("\t       ");
+            WriteBlack(@"|  |_)  | ");
+            WriteRed(@"|  `----.");
+            WriteBlack(@"/  _____  \ ");
+            WriteRed(@"|  `----.");
+            WriteBlack(@"|  .  \  ");
+            WriteRed(@"|  `--'  |  ");
+            WriteBlack(@"/  _____  \ ");
+            WriteRed(@"|  `----.");
+            WriteBlack(@"|  .  \");
+            Console.WriteLine();
+
+            Console.Write("\t       ");
+            WriteBlack(@"|______/  ");
+            WriteRed(@"|_______");
+            WriteBlack(@"/__/     \__\ ");
+            WriteRed(@"\______|");
+            WriteBlack(@"|__|\__\  ");
+            WriteRed(@"\______/  ");
+            WriteBlack(@"/__/     \__\ ");
+            WriteRed(@"\______|");
+            WriteBlack(@"|__|\__\ ");
+            Console.WriteLine();
+
         }
     }
 }

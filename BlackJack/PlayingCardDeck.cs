@@ -22,10 +22,10 @@ namespace BlackJack
             return card;
         }
 
-        public void PlaceCardInBottomOfDeck(PlayingCard card)
-        {
-            PlayingCards.Add(card);
-        }
+        //public void PlaceCardInBottomOfDeck(PlayingCard card)
+        //{
+        //    PlayingCards.Add(card);
+        //}
 
         public PlayingCardDeck()
         {

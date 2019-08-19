@@ -9,8 +9,8 @@ namespace BlackJack
     public class PlayingCard
     {
         public int Id { get; set; }
-        public CardSuit CardSuit { get; set; }
-        public int Value { get; set; }
+        public CardSuit CardSuit { get; private set; }
+        public int Value { get; private set; }
 
         public PlayingCard (CardSuit cardSuit, int value)
         {
